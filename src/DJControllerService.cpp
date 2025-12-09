@@ -11,8 +11,9 @@ DJControllerService::DJControllerService(size_t cache_size)
  */
 int DJControllerService::loadTrackToCache(AudioTrack& track) {
     if(cache.contains(track.get_title())){
-        std::cout << "[INFO] Cache HIT for: " << track.get_title() << std::endl;
+        //std::cout << "[INFO] Cache HIT for: " << track.get_title() << std::endl;
         cache.get(track.get_title());
+        displayCacheStatus();
         return 1;
     }
     else{
@@ -25,6 +26,10 @@ int DJControllerService::loadTrackToCache(AudioTrack& track) {
         cloned->load();
         cloned->analyze_beatgrid();
         bool insert =cache.put(std::move(cloned));
+        #ifdef DEBUG
+        std::cout << "[Cache INSERT] Added '" << track.get_title() << "' to cache." << std::endl;
+        #endif
+        displayCacheStatus();
         if(insert == true){
             return -1;
         }

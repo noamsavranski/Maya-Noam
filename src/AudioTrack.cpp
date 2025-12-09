@@ -68,10 +68,10 @@ AudioTrack& AudioTrack::operator=(const AudioTrack& other) {
     #ifdef DEBUG
     std::cout << "AudioTrack copy assignment called for: " << other.title << std::endl;
     #endif
-    if (this == &other) // check if the objects is already me
+    if (this == &other) 
         return *this;
 
-    if (waveform_data) { // wave_form data isnt a null pointer
+    if (waveform_data) { 
         delete[] waveform_data;
         waveform_data = nullptr;
     }

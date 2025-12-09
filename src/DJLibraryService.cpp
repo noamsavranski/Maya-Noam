@@ -37,19 +37,23 @@ DJLibraryService& DJLibraryService::operator=(DJLibraryService&& other) noexcept
 }
 void DJLibraryService::buildLibrary(const std::vector<SessionConfig::TrackInfo>& library_tracks) {
     //Todo: Implement buildLibrary method
-     for (size_t i = 0; i < library_tracks.size(); i++) {
-        const SessionConfig::TrackInfo& trackInfo = library_tracks[i];
-        AudioTrack* track = nullptr;
+     for (size_t i = 0; i < library_tracks.size(); ++i) {
+        const SessionConfig::TrackInfo& track_info = library_tracks[i];
 
-        if (trackInfo.type == "MP3") {
-            track = new MP3Track(trackInfo.title, trackInfo.artists, trackInfo.duration_seconds, trackInfo.bpm, trackInfo.extra_param1);
-        }
-        else if (trackInfo.type == "WAV") {
-            track = new WAVTrack(trackInfo.title, trackInfo.artists, trackInfo.duration_seconds, trackInfo.bpm, trackInfo.extra_param1, trackInfo.extra_param2);
+        AudioTrack* new_track = nullptr; 
+
+        if (track_info.type == "MP3") { 
+            new_track = new MP3Track( track_info.title,track_info.artists,track_info.duration_seconds,track_info.bpm, track_info.extra_param1, track_info.extra_param2);
         } 
-    library.push_back(track);
+        else if (track_info.type == "WAV") { 
+            new_track = new WAVTrack(track_info.title,track_info.artists,track_info.duration_seconds,track_info.bpm,track_info.extra_param1,track_info.extra_param2);
+            
+        }
+        if (new_track) {
+            library.push_back(new_track);
+        }
     }
-    std::cout << "[INFO] Track library built: " << library.size() << " tracks loaded" << std::endl;
+     std::cout << "[INFO] Track library built: " << library.size() << " tracks loaded" << std::endl;
 }
 
 /**
@@ -92,34 +96,37 @@ AudioTrack* DJLibraryService::findTrack(const std::string& track_title) {
 }
 
 void DJLibraryService::loadPlaylistFromIndices(const std::string& playlist_name, const std::vector<int>& track_indices) {
-    std::cout << "[INFO] Loading playlist: " << playlist_name << std::endl;
-    Playlist currPlaylist(playlist_name);
-    
-    size_t tracksAdded = 0;
-    
-    for (size_t i = 0; i < track_indices.size(); i++) {
-        int trackIndex = track_indices[i];
-        size_t index = track_indices[i] - 1; // האינדקס בספרייה הוא 0-מבוסס
+     std::cout << "[INFO] Loading playlist: " << playlist_name << std::endl;
 
-        if (index >= library.size()) {
+    Playlist currPlaylist(playlist_name);
+
+    for (size_t i = 0; i < track_indices.size(); ++i) {
+        int trackIndex = track_indices[i]; 
+        if (trackIndex < 1 || trackIndex > static_cast<int>(library.size())) {
             std::cout << "[WARNING] Invalid track index: " << trackIndex << std::endl;
             continue;
         }
+        size_t index = static_cast<size_t>(trackIndex - 1);
 
         AudioTrack* originalTrack = library[index];
+
         PointerWrapper<AudioTrack> clonedWrapper = originalTrack->clone();
-        AudioTrack* clonedTrack = clonedWrapper.release();
-        if (!clonedTrack) {
-            std::cout << "[Error] Failed to clone track: " << originalTrack->get_title() << std::endl;
+        if (!clonedWrapper) {
+            std::cout << "[Error] Failed to clone track: "
+                      << originalTrack->get_title() << std::endl;
             continue;
         }
+        clonedWrapper->load();
+        clonedWrapper->analyze_beatgrid();
 
-        currPlaylist.add_track(clonedTrack);
-        tracksAdded++;
-        playlist = std::move(currPlaylist);
+        AudioTrack* clonedTrack = clonedWrapper.release();
+        currPlaylist.add_track(clonedTrack); 
     }
-    (void)playlist_name; 
-    (void)track_indices;  
+
+    std::cout << "[INFO] Playlist loaded: " << playlist_name
+              << " (" << currPlaylist.get_track_count() << " tracks)" << std::endl;
+    playlist = std::move(currPlaylist);
+
 }
 /**
  * TODO: Implement getTrackTitles method
@@ -129,10 +136,12 @@ std::vector<std::string> DJLibraryService::getTrackTitles() const {
     // Your implementation here
     std::vector<std::string> trackTitles;
     std::vector<AudioTrack*> tracks = playlist.getTracks();
-    for (size_t i = 0; i < tracks.size(); i++) {
-    AudioTrack* track = tracks[i];
-    trackTitles.push_back(track->get_title());
+    for (const auto& track : tracks) {
+        if (track) {
+            trackTitles.push_back(track->get_title());
+        }
     }
+
     return trackTitles;
 }
                                                

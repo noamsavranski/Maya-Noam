@@ -23,12 +23,12 @@ Playlist::~Playlist() {
     head = nullptr;
 }
 Playlist::Playlist(Playlist&& other) noexcept
-    : head(other.head), playlist_name(std::move(other.playlist_name)), track_count(other.track_count) {
+    : head(other.head),
+      playlist_name(std::move(other.playlist_name)),
+      track_count(other.track_count) 
+{
     other.head = nullptr;
     other.track_count = 0;
-    #ifdef DEBUG
-    std::cout << "Playlist move constructor called for: " << playlist_name << std::endl;
-    #endif
 }
 
 // (Move Assignment Operator)
@@ -59,21 +59,29 @@ Playlist& Playlist::operator=(Playlist&& other) noexcept {
 Playlist::Playlist(const Playlist& other)
     : head(nullptr), playlist_name(other.playlist_name), track_count(0) {
     PlaylistNode* current = other.head;
+    PlaylistNode* new_tail = nullptr;
 
-    
     while (current) {
-
         AudioTrack* clonedTrack = current->track->clone().release();
         if (!clonedTrack) {
             std::cerr << "[ERROR] Failed to clone track in Playlist copy constructor" << std::endl;
             current = current->next;
             continue;
         }
+
         PlaylistNode* newNode = new PlaylistNode(clonedTrack);
+        newNode->next = nullptr;
 
         if (!head) {
+            // First node
             head = newNode;
-        } 
+            new_tail = newNode;
+        } else {
+            // Append to the end
+            new_tail->next = newNode;
+            new_tail = newNode;
+        }
+
         current = current->next;
         track_count++;
     }
@@ -134,13 +142,11 @@ void Playlist::remove_track(const std::string& title) {
         } else {
             head = current->next;
         }
-        
+        track_count--;
+        std::cout << "Removed '" << title << "' from playlist" << std::endl;
         delete current->track;
         delete current;
         current = nullptr;
-
-        track_count--;
-        std::cout << "Removed '" << title << "' from playlist" << std::endl;
 
     } else {
         std::cout << "Track '" << title << "' not found in playlist" << std::endl;

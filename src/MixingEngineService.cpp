@@ -58,34 +58,16 @@ int MixingEngineService::loadTrackToDeck(const AudioTrack& track) {
             sync_bpm(clone);
         }
      }
+     else if (auto_sync && !decks[active_deck]) {
+         std::cout << "[Sync BPM] Cannot sync - one of the decks is empty." << std::endl;
+     }
      decks[target_deck] = clone.release();
 
-     std::cout << "[Load Complete] " << decks[target_deck]->get_title() << " is now loaded on deck " << target_deck << std::endl;
-
-     if (decks[active_deck]) {
-        std::cout << "[Unload] Unloading previous deck " << active_deck << decks[active_deck]->get_title() << std::endl;
-        delete decks[active_deck];
-        decks[active_deck] = nullptr;
-    }
-    active_deck = target_deck;
-
-    std::cout << "[Active Deck] Switched to deck " << target_deck << std::endl;
-
-    std::cout << "\n=== Deck Status ===" << std::endl;
-
-    std::cout << "Deck 0: ";
-    if (decks[0]) std::cout << decks[0]->get_title();
-    else std::cout << "[EMPTY]";
-    std::cout << std::endl;
-
-    std::cout << "Deck 1: ";
-    if (decks[1]) std::cout << decks[1]->get_title();
-    else std::cout << "[EMPTY]";
-    std::cout << std::endl;
-
-    std::cout << "Active Deck: " << active_deck << std::endl;
-    std::cout << "===================" << std::endl;
+     std::cout << "[Load Complete] '" << decks[target_deck]->get_title() << "' is now loaded on deck " << target_deck << std::endl;
+     active_deck = target_deck;
      
+    std::cout << "[Active Deck] Switched to deck " << target_deck << std::endl;
+    displayDeckStatus();
     return target_deck;
 }
 
