@@ -191,7 +191,7 @@ void DJSession::simulate_dj_performance() {
 
        
         for (const std::string& title : tracks_to_process) {
-            std::cout << "\n--- Processing: " << title << "---" <<std::endl;
+            std::cout << "\n--- Processing: " << title << " ---" <<std::endl;
             stats.tracks_processed++;
             load_track_to_controller(title);
             load_track_to_mixer_deck(title);
@@ -209,7 +209,7 @@ void DJSession::simulate_dj_performance() {
  * @return: true if configuration loaded successfully; false on error
  */
 bool DJSession::load_configuration() {
-    const std::string config_path = "input_2/dj_config.txt";
+    const std::string config_path = "bin/dj_config.txt";
     
     std::cout << "Loading configuration from: " << config_path << std::endl;
     

@@ -59,6 +59,13 @@ public:
     void set_bpm_tolerance(int tolerance) {
         bpm_tolerance = tolerance;
     }
+    MixingEngineService(const MixingEngineService& other) = delete;
+
+    MixingEngineService& operator=(const MixingEngineService& other) = delete;
+
+    MixingEngineService(MixingEngineService&& other) noexcept;
+
+    MixingEngineService& operator=(MixingEngineService&& other) noexcept;
 
 };
 

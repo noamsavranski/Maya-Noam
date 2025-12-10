@@ -26,6 +26,32 @@ MixingEngineService::~MixingEngineService() {
         }
     }
 }
+MixingEngineService::MixingEngineService(MixingEngineService&& other) noexcept 
+    : active_deck(other.active_deck), auto_sync(other.auto_sync), bpm_tolerance(other.bpm_tolerance) 
+{
+    decks[0] = other.decks[0];
+    decks[1] = other.decks[1];
+    
+    other.decks[0] = nullptr;
+    other.decks[1] = nullptr;
+}
+
+MixingEngineService& MixingEngineService::operator=(MixingEngineService&& other) noexcept {
+    if (this != &other) {
+        if (decks[0]) delete decks[0];
+        if (decks[1]) delete decks[1];
+
+        decks[0] = other.decks[0];
+        decks[1] = other.decks[1];
+        active_deck = other.active_deck;
+        auto_sync = other.auto_sync;
+        bpm_tolerance = other.bpm_tolerance;
+
+        other.decks[0] = nullptr;
+        other.decks[1] = nullptr;
+    }
+    return *this;
+}
 
 
 /**
@@ -34,7 +60,7 @@ MixingEngineService::~MixingEngineService() {
  * @return: Index of the deck where track was loaded, or -1 on failure
  */
 int MixingEngineService::loadTrackToDeck(const AudioTrack& track) {
-    std::cout << "[=== Loading Track to Deck ===]" << std::endl;
+    std::cout << "=== Loading Track to Deck ===" << std::endl;
 
     PointerWrapper<AudioTrack> clone = track.clone();
 
